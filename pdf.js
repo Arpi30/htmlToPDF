@@ -25,7 +25,50 @@ const obj = {
     toTxt: () => {
       let blob = new Blob([JSON.stringify(obj.state)], {type:'text/plain'})
       saveAs(blob, 'mentes')
+    },
+    writeToWindow: () => {
+      obj.htmlTag.form.addEventListener('keypress',(e) => {
+        if(e.key === 'Enter'){
+          e.preventDefault()
+          const value = obj.htmlTag.form['value'].value
+          if(!value){
+            alert('Please type something')
+          }
+          obj.state.push({value})
+          obj.htmlTag.form['value'].value = ''
+          obj.eventFunction.render()
+        }
+      })
     }
+  },
+  downloadProcess: () => {
+    obj.htmlTag.boxes.forEach(box => {
+      box.onclick = () => {
+        if(obj.htmlTag.pdfCheckBox.checked){
+          obj.htmlTag.txtCheckBox.disabled = obj.htmlTag.pdfCheckBox.checked
+          obj.htmlTag.saveButton.onclick = (e) => {
+            e.preventDefault()
+            obj.eventFunction.toPdf()
+            obj.htmlTag.pdfCheckBox.checked = !obj.htmlTag.pdfCheckBox.checked
+            obj.htmlTag.txtCheckBox.disabled = !obj.htmlTag.pdfCheckBox.checked
+          }
+        }else{
+          obj.htmlTag.txtCheckBox.disabled = false
+        }
+    
+        if (obj.htmlTag.txtCheckBox.checked){
+          obj.htmlTag.pdfCheckBox.disabled = obj.htmlTag.txtCheckBox.checked
+          obj.htmlTag.saveButton.onclick = (e) => {
+            e.preventDefault()
+            obj.eventFunction.toTxt()
+            obj.htmlTag.txtCheckBox.checked = !obj.htmlTag.txtCheckBox.checked
+            obj.htmlTag.pdfCheckBox.disabled = !obj.htmlTag.txtCheckBox.checked
+          }
+        }else{
+          obj.htmlTag.pdfCheckBox.disabled = false
+        }
+      }
+    })
   },
   htmlTag:{
     form: document.getElementById("form"),
@@ -33,29 +76,13 @@ const obj = {
     pdfCheckBox: document.getElementById("pdfCheckbox"),
     txtCheckBox: document.getElementById("txtCheckbox"),
     saveButton: document.getElementById("saveButton"),
+    boxes: document.querySelectorAll('.checkbox')
+  },
+  callFunction: () => {
+    obj.downloadProcess()
+    obj.eventFunction.writeToWindow()
+
   }
 }
 
-obj.htmlTag.form.addEventListener('keypress',(e) => {
-  if(e.key === 'Enter'){
-    e.preventDefault()
-    const value = obj.htmlTag.form['value'].value
-    if(!value){
-      alert('Please type something')
-    }
-    obj.state.push({value})
-    obj.htmlTag.form['value'].value = ''
-    obj.eventFunction.render()
-  }
-})
-
-obj.htmlTag.saveButton.onclick = (e) => {
-  e.preventDefault()
-  if(obj.htmlTag.pdfCheckBox.checked){
-    obj.eventFunction.toPdf()
-  }else if(obj.htmlTag.txtCheckBox.checked){
-    obj.eventFunction.toTxt()
-  } else{
-    alert('I cant download anything if you dont choose')
-  }
-}
+obj.callFunction()
